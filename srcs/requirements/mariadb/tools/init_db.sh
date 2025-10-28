@@ -24,6 +24,9 @@ CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4
 CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$USER_PW';
 GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'%';
 ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_PW';
+# also allow root over TCP if needed (healthchecks, adminers, etc.)
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '$ROOT_PW';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 DELETE FROM mysql.user WHERE User='';
 DROP DATABASE IF EXISTS test; 
 FLUSH PRIVILEGES;
@@ -34,4 +37,4 @@ SQL
 fi
 
 echo "Starting MariaDB..."
-exec mysqld --user=mysql --datadir="$DATA_DIR"
+exec mysqld --user=mysql --datadir="$DATA_DIR" --bind-address=0.0.0.0

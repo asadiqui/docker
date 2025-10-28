@@ -1,8 +1,9 @@
-version: "3.8"
-
 services:
   mariadb:
-    build: ./requirements/mariadb
+    build:
+      context: ./requirements/mariadb
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION}
     image: mariadb
     container_name: mariadb
     restart: always
@@ -15,13 +16,17 @@ services:
     networks:
       - inception
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -hmariadb -uroot -p$$(cat /run/secrets/db_root_password) || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "mysqladmin --socket=/run/mysqld/mysqld.sock --silent ping -uroot -p$$(cat /run/secrets/db_root_password)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
 
   wordpress:
-    build: ./requirements/wordpress
+    build:
+      context: ./requirements/wordpress
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION}
     image: wordpress
     container_name: wordpress
     restart: always
@@ -39,7 +44,10 @@ services:
       - inception
 
   nginx:
-    build: ./requirements/nginx
+    build:
+      context: ./requirements/nginx
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION}
     image: nginx
     container_name: nginx
     restart: always

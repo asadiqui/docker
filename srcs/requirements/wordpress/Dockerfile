@@ -1,4 +1,4 @@
-FROM alpine:3.21
+FROM alpine:3.20
 
 ENV PHP_INI_DIR=/etc/php82 \
     PHP_FPM_CONF_DIR=/etc/php82/php-fpm.d \
