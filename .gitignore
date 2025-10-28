@@ -1,0 +1,32 @@
+# IDE/editor
+#.vscode/
+#.idea/
+#*.code-workspace
+
+# OS/Temp
+#.DS_Store
+#Thumbs.db
+#*.swp
+#*.swo
+
+# Caches/builds
+#__pycache__/
+#*.pyc
+#node_modules/
+#dist/
+#build/
+
+# Logs/PIDs
+#*.log
+#*.pid
+
+# Secrets and certs
+#secrets/*
+#!secrets/.gitkeep
+#*.crt
+#*.key
+#*.pem
+#*.pfx
+
+# Local data if created inside repo accidentally
+#data/
