@@ -71,5 +71,9 @@ if [ ! -f wp-config.php ]; then
     wp user create '${WP_USER_NAME}' '${WP_USER_EMAIL}' --role=author --user_pass='${WP_USER_PASS}' --allow-root --path=${WP_PATH}" www-data
 fi
 
+# Ensure safe, readable permissions for NGINX
+find "$WP_PATH" -type d -exec chmod 755 {} \; 2>/dev/null || true
+find "$WP_PATH" -type f -exec chmod 644 {} \; 2>/dev/null || true
+
 echo "Starting php-fpm..."
 exec php-fpm82 -F
