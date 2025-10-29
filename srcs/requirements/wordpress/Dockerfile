@@ -6,7 +6,7 @@ ENV PHP_INI_DIR=/etc/php82 \
 
 RUN apk add --no-cache \
     php82 php82-cli php82-fpm php82-mysqli php82-json php82-curl php82-dom php82-exif \
-    php82-fileinfo php82-mbstring php82-openssl php82-xml php82-zip \
+    php82-fileinfo php82-mbstring php82-openssl php82-xml php82-zip php82-phar \
     curl tar ca-certificates netcat-openbsd bash \
  && ln -sf /usr/bin/php82 /usr/bin/php
 
