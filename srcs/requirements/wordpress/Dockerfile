@@ -5,9 +5,10 @@ ENV PHP_INI_DIR=/etc/php82 \
     WP_PATH=/var/www/html
 
 RUN apk add --no-cache \
-    php82 php82-fpm php82-mysqli php82-json php82-curl php82-dom php82-exif \
+    php82 php82-cli php82-fpm php82-mysqli php82-json php82-curl php82-dom php82-exif \
     php82-fileinfo php82-mbstring php82-openssl php82-xml php82-zip \
-    curl tar ca-certificates netcat-openbsd bash
+    curl tar ca-certificates netcat-openbsd bash \
+ && ln -sf /usr/bin/php82 /usr/bin/php
 
 # RUN adduser -D -H -u 82 -s /sbin/nologin www-data && \
 #     mkdir -p ${WP_PATH} && chown -R www-data:www-data ${WP_PATH}
