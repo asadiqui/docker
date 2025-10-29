@@ -42,10 +42,10 @@ if [ ! -f wp-config.php ]; then
   chmod +x /usr/local/bin/wp
 
   echo "Downloading WordPress core..."
-  su -s /bin/sh -c "wp core download --allow-root --path=${WP_PATH}" www-data
+  su -s /bin/sh -c "php /usr/local/bin/wp core download --allow-root --path=${WP_PATH}" www-data
 
   echo "Creating wp-config.php..."
-  su -s /bin/sh -c "wp config create \
+  su -s /bin/sh -c "php /usr/local/bin/wp config create \
     --allow-root \
     --path=${WP_PATH} \
     --dbname='${DB_NAME}' \
@@ -56,7 +56,7 @@ if [ ! -f wp-config.php ]; then
     --skip-check" www-data
 
   echo "Installing WordPress..."
-  su -s /bin/sh -c "wp core install \
+  su -s /bin/sh -c "php /usr/local/bin/wp core install \
     --allow-root \
     --path=${WP_PATH} \
     --url='${SITE_URL}' \
@@ -67,8 +67,8 @@ if [ ! -f wp-config.php ]; then
     --skip-email" www-data
 
   # Create a secondary user if not exists
-  su -s /bin/sh -c "wp user get '${WP_USER_NAME}' --field=ID --allow-root --path=${WP_PATH} >/dev/null 2>&1 || \
-    wp user create '${WP_USER_NAME}' '${WP_USER_EMAIL}' --role=author --user_pass='${WP_USER_PASS}' --allow-root --path=${WP_PATH}" www-data
+  su -s /bin/sh -c "php /usr/local/bin/wp user get '${WP_USER_NAME}' --field=ID --allow-root --path=${WP_PATH} >/dev/null 2>&1 || \
+    php /usr/local/bin/wp user create '${WP_USER_NAME}' '${WP_USER_EMAIL}' --role=author --user_pass='${WP_USER_PASS}' --allow-root --path=${WP_PATH}" www-data
 fi
 
 # Ensure safe, readable permissions for NGINX

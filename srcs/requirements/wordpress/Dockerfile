@@ -10,6 +10,9 @@ RUN apk add --no-cache \
     curl tar ca-certificates netcat-openbsd bash \
  && ln -sf /usr/bin/php82 /usr/bin/php
 
+# Ensure Phar extension is explicitly enabled for CLI
+RUN echo "extension=phar" > /etc/php82/conf.d/50_phar.ini
+
 # RUN adduser -D -H -u 82 -s /sbin/nologin www-data && \
 #     mkdir -p ${WP_PATH} && chown -R www-data:www-data ${WP_PATH}
 
