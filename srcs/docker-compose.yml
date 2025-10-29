@@ -1,9 +1,8 @@
+version: "3.8"
+
 services:
   mariadb:
-    build:
-      context: ./requirements/mariadb
-      args:
-        ALPINE_VERSION: ${ALPINE_VERSION}
+    build: ./requirements/mariadb
     image: mariadb
     container_name: mariadb
     restart: always
@@ -23,10 +22,7 @@ services:
       start_period: 15s
 
   wordpress:
-    build:
-      context: ./requirements/wordpress
-      args:
-        ALPINE_VERSION: ${ALPINE_VERSION}
+    build: ./requirements/wordpress
     image: wordpress
     container_name: wordpress
     restart: always
@@ -44,10 +40,7 @@ services:
       - inception
 
   nginx:
-    build:
-      context: ./requirements/nginx
-      args:
-        ALPINE_VERSION: ${ALPINE_VERSION}
+    build: ./requirements/nginx
     image: nginx
     container_name: nginx
     restart: always
