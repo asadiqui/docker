@@ -1,17 +1,16 @@
+# Use the specified version of Alpine
 FROM alpine:3.21
 
-RUN apk add --no-cache nginx openssl bash
+# Install Nginx, OpenSSL, and Bash
+RUN apk update && \
+    apk add nginx openssl bash
 
-RUN mkdir -p /run/nginx /etc/nginx/certs && \
-    chown -R root:root /etc/nginx /run/nginx
+# Copy the executable script for Nginx configuration
+COPY tools/nginx-entrypoint.sh /usr/local/bin/
 
-COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
+# Change permissions of the executable file and create necessary directories
+RUN chmod +x /usr/local/bin/nginx-entrypoint.sh && \
+    mkdir -p /etc/nginx/ssl
 
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-VOLUME ["/etc/nginx/certs", "/var/www/html"]
-
-EXPOSE 443
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# Set the entrypoint script for the container
+ENTRYPOINT [ "nginx-entrypoint.sh" ]

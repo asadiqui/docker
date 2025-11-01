@@ -1,91 +1,147 @@
 services:
   mariadb:
-    build: ./requirements/mariadb
-    image: mariadb
     container_name: mariadb
+    init: true
     restart: always
-    env_file: ./.env
-    secrets:
-      - db_root_password
-      - db_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    env_file:
+      - .env
+    build: requirements/mariadb
     volumes:
-      - db:/var/lib/mysql
+      - mariadb:/var/lib/mysql
     networks:
-      - inception
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin --socket=/run/mysqld/mysqld.sock --silent ping -uroot -p$$(cat /run/secrets/db_root_password)"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 15s
-
-  wordpress:
-    build: ./requirements/wordpress
-    image: wordpress
-    container_name: wordpress
-    restart: always
-    env_file: ./.env
-    secrets:
-      - db_password
-      - wp_admin_password
-      - wp_user_password
-    volumes:
-      - wp:/var/www/html
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z -w3 127.0.0.1 9000"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 10s
-    depends_on:
-      mariadb:
-        condition: service_healthy
-    networks:
-      - inception
-
+      - docker-network
+    image: mariadb
   nginx:
-    build: ./requirements/nginx
-    image: nginx
     container_name: nginx
+    init: true
     restart: always
-    env_file: ./.env
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    env_file:
+      - .env
+    build: requirements/nginx
     ports:
-      - "443:443"
+      - "443:443" #https
     volumes:
-      - wp:/var/www/html:ro
-      - certs:/etc/nginx/certs
-    depends_on:
-      wordpress:
-        condition: service_healthy
+      - wordpress:/var/www/html 
     networks:
-      - inception
-
-networks:
-  inception:
-    name: inception
+      - docker-network
+    depends_on:
+      - wordpress
+      - mariadb
+    image: nginx
+  wordpress:
+    container_name: wordpress
+    init: true
+    restart: always
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - WORDPRESS_TITLE=${WORDPRESS_TITLE}
+      - WORDPRESS_ADMIN_USER=${WORDPRESS_ADMIN_USER}
+      - WORDPRESS_ADMIN_PASSWORD=${WORDPRESS_ADMIN_PASSWORD}
+      - WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL}
+      - WORDPRESS_USER=${WORDPRESS_USER}
+      - WORDPRESS_PASSWORD=${WORDPRESS_PASSWORD}
+      - WORDPRESS_EMAIL=${WORDPRESS_EMAIL}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    build: requirements/wordpress
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - docker-network
+    depends_on:
+      - mariadb
+      - redis
+    image: wordpress
+  redis:
+    build: ./requirements/bonus/redis
+    container_name: redis
+    restart: always
+    networks:
+      - docker-network
+    image: redis
+  ftp:
+    build: ./requirements/bonus/ftp
+    container_name: ftp
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - FTP_USER=${FTP_USER}
+      - FTP_PASSWORD=${FTP_PASSWORD}
+      - WORDPRESS_DIR=${WORDPRESS_DIR}
+    volumes:
+      - wordpress:/var/www/html
+    ports:
+      - "21:21"
+      - "21000-21010:21000-21010"
+    networks:
+      - docker-network
+    depends_on:
+      - wordpress
+    image: ftp
+  adminer:
+    build: ./requirements/bonus/adminer
+    container_name: adminer
+    restart: always
+    depends_on:
+      - mariadb
+    ports:
+      - "8080:8080"
+    networks:
+      - docker-network
+    image: adminer
+  static-site:
+    container_name: static-site
+    build: ./requirements/bonus/static-site
+    restart: always
+    ports:
+      - "80:80"
+    image: static-site
+  portainer:
+    build: ./requirements/bonus/portainer
+    container_name: portainer
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+      - "9000:9000"
+    networks:
+      - docker-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+    image: portainer
+    restart: always
 
 volumes:
-  db:
+  mariadb:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/asadiqui/data/db
-  wp:
+      device: ${HOME}/data/mariadb
+  wordpress:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/asadiqui/data/wp
-  certs:
-    driver: local
+      device: ${HOME}/data/wordpress
+  portainer:
+    driver_opts:
+      o: bind
+      type: none
+      device: ${HOME}/data/portainer
 
-secrets:
-  db_root_password:
-    file: ../secrets/db_root_password.txt
-  db_password:
-    file: ../secrets/db_password.txt
-  wp_admin_password:
-    file: ../secrets/wp_admin_password.txt
-  wp_user_password:
-    file: ../secrets/wp_user_password.txt
+networks:
+  docker-network:
+    name: docker-network
+    driver: bridge
